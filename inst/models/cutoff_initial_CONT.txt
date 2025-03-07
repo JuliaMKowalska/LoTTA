@@ -1,0 +1,17 @@
+model
+    {
+
+    for ( i in 1:N ) {
+
+      t[i]~dbern(paramt[i])
+      paramt[i] <- ifelse(x[i]<c,al,al+j)
+    }
+
+
+    al~dunif(0,1-j)
+    j~dunif(jlb,1)
+    c0~dbeta(alpha,beta)
+    c=c0*(cub-clb)+clb
+
+
+    }

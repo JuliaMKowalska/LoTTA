@@ -1,0 +1,36 @@
+model
+    {
+
+    for ( i in 1:N ) {
+      y[i]~dnorm(param[i],Tau[i])
+      param[i] <-ifelse(x[i]<c,a1l*(xc[i])+a0l+ilogit(100*(kl-x[i]))*((a3l)*(xc[i])^3+(a2l)*(xc[i])^2),a1r*(xc[i])+a0r+ilogit(100*(x[i]-kr))*((a3r)*(xc[i])^3+(a2r)*(xc[i])^2))
+      Tau[i]<-ifelse(x[i]<c,tau1l+tau2l*ilogit(100*(kl-x[i])),tau1r+tau2r*ilogit(100*(x[i]-kr)))
+      }
+
+    MAX=max(x)
+    MIN=min(x)
+    ### Define the priors
+    xc=x-c
+
+    tau1l~dchisqr(df)
+    tau2pl~dbeta(1,1)
+    tau2l=-tau2pl*tau1l
+    kl~dunif(ubl,c-lb)
+    a0l~dnorm(0,pr)
+    a1l~dnorm(0,pr)
+    a2l~dnorm(0,pr*(c-kl))
+    a3l~dnorm(0,pr*(c-kl))
+
+    tau1r~dchisqr(df)
+    tau2pr~dbeta(1,1)
+    tau2r=-tau2pr*tau1r
+    kr~dunif(c+lb,ubr)
+    a0r~dnorm(0,pr)
+    a1r~dnorm(0,pr)
+    a2r~dnorm(0,pr*(kr-c))
+    a3r~dnorm(0,pr*(kr-c))
+
+
+    eff=(a0r-a0l)
+
+    }

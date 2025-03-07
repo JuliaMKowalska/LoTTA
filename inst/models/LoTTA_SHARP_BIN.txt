@@ -1,0 +1,34 @@
+model
+    {
+
+    for ( i in 1:N ) {
+      y[i]~dbern(param[i])
+      param[i] <-ifelse(x[i]<c,a1l*(xc[i])+a0l+ilogit(100*(kl-x[i]))*(ilogit((a3l)*(xc[i])^3+(a2l)*(xc[i])^2+b1l*(xc[i])+b0l)-a0l-a1l*xc[i]),a1r*(xc[i])+a0r+ilogit(100*(x[i]-kr))*(ilogit((a3r)*(xc[i])^3+(a2r)*(xc[i])^2+b1r*(xc[i])+b0r)-a0r-a1r*xc[i]))
+      }
+
+    MAX=max(x)
+    MIN=min(x)
+    ### Define the priors
+    xc=x-c
+
+    kl~dunif(ubl,c-lb)
+    kld=kl-c
+    a0l~dunif(0,1)
+    b0l=logit(a0l)
+    a1l~dunif((0.99-a0l)/(kld),(0.01-a0l)/(kld))
+    b1l=a1l*pow(ilogit(-b0l)*(1-ilogit(-b0l)),-1)
+    a2l~dnorm(0,-pr*kld)
+    a3l~dnorm(0,-pr*kld)
+
+    kr~dunif(c+lb,ubr)
+    krd=kr-c
+    a0r~dunif(0,1)
+    b0r=logit(a0r)
+    a1r~dunif((0.01-a0r)/(krd),(0.99-a0r)/(krd))
+    b1r=a1r*pow(ilogit(-b0r)*(1-ilogit(-b0r)),-1)
+    a2r~dnorm(0,pr*krd)
+    a3r~dnorm(0,pr*krd)
+
+    eff=(a0r-a0l)
+
+    }

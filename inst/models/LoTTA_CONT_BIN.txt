@@ -1,0 +1,49 @@
+model
+    {
+
+    for ( i in 1:N ) {
+      y[i]~dbern(param[i])
+      t[i]~dbern(paramt[i])
+      param[i] <-ifelse(x[i]<c,a1l*(xc[i])+a0l+ilogit(100*(kl-x[i]))*(ilogit((a3l)*(xc[i])^3+(a2l)*(xc[i])^2+b1l*(xc[i])+b0l)-a0l-a1l*xc[i]),a1r*(xc[i])+a0r+ilogit(100*(x[i]-kr))*(ilogit((a3r)*(xc[i])^3+(a2r)*(xc[i])^2+b1r*(xc[i])+b0r)-a0r-a1r*xc[i]))
+      paramt[i] <- ifelse(x[i]<c,ifelse(x[i]>=c-k1t,a1lt*x[i]+b1lt,a2lt*x[i]+b2lt),ifelse(x[i]<=c+k2t,a1rt*x[i]+b1rt,a2rt*x[i]+b2rt))
+
+    }
+    #pr=0.00001
+    MAX=max(x)
+    MIN=min(x)
+    c0~dbeta(alpha,beta)
+    c=c0*(cub-clb)+clb
+    xc=x-c
+    j~dunif(max(jlb,abs(a0r-a0l)),1)
+    k1t~dunif(lb,c-ublt)
+    k2t~dunif(lb,ubrt-c)
+    a2lt~dunif(0,(1-j)/(c-k1t-MIN))
+    b2lt~dunif(-a2lt*MIN,1-j-a2lt*(c-k1t))
+    a1lt~dunif(0,(1-j-a2lt*(c-k1t)-b2lt)/k1t)
+    b1lt=(c-k1t)*(a2lt-a1lt)+b2lt
+    a1rt~dunif(0,(1-a1lt*c-b1lt-j)/k2t)
+    b1rt=a1lt*c+b1lt+j-a1rt*c
+    a2rt~dunif(0,(1-b1rt-(c+k2t)*a1rt)/(MAX-c-k2t))
+    b2rt=(c+k2t)*(a1rt-a2rt)+b1rt
+
+    kl~dunif(ubl,c-lb)
+    kld=kl-c
+    a0l~dunif(0,1)
+    b0l=logit(a0l)
+    a1l~dunif((0.99-a0l)/(kld),(0.01-a0l)/(kld))
+    b1l=a1l*pow(ilogit(-b0l)*(1-ilogit(-b0l)),-1)
+    a2l~dnorm(0,-pr*kld)
+    a3l~dnorm(0,-pr*kld)
+
+    kr~dunif(c+lb,ubr)
+    krd=kr-c
+    a0r~dunif(0,1)
+    b0r=logit(a0r)
+    a1r~dunif((0.01-a0r)/(krd),(0.99-a0r)/(krd))
+    b1r=a1r*pow(ilogit(-b0r)*(1-ilogit(-b0r)),-1)
+    a2r~dnorm(0,pr*krd)
+    a3r~dnorm(0,pr*krd)
+    eff=(a0r-a0l)/j
+
+
+    }

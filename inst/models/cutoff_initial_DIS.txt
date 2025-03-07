@@ -1,0 +1,17 @@
+model
+    {
+
+    for ( i in 1:N ) {
+
+      t[i]~dbern(paramt[i])
+      paramt[i] <- ifelse(x[i]<c-lb*0.5,al,al+j)
+    }
+
+
+    al~dunif(0,1-j)
+    j~dunif(jlb,1)
+    c=(ct*grid+cstart-grid)
+    ct~dcat(weights)
+
+
+    }

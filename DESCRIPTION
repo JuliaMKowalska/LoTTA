@@ -1,0 +1,19 @@
+Package: LoTTA
+Type: Package
+Title: Bayesian cutoff detection and treatment effect estimation for the regression discontinuity design
+Version: 0.1.0
+Authors@R: 
+    person("Julia", "Kowalska", , "j.m.kowalska@vu.nl", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6559-4354"))
+Description: Package implements LoTTA.
+License: GPL (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: stats, 
+         bayestestR
+Depends: runjags,
+         ggplot2,
+         ggpubr
+    
+

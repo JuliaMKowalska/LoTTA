@@ -1,0 +1,30 @@
+model
+    {
+
+    for ( i in 1:N ) {
+
+      t[i]~dbern(paramt[i])
+      paramt[i] <- ifelse(x[i]<c,ifelse(x[i]>=c-k1t,a1lt*x[i]+b1lt,a2lt*x[i]+b2lt),ifelse(x[i]<=c+k2t,a1rt*x[i]+b1rt,a2rt*x[i]+b2rt))
+    }
+    MAX=max(x)
+    MIN=min(x)
+
+
+    ### Define the priors
+
+
+    xc=x-c
+    j~dunif(jlb,1)
+    k1t~dunif(lb,c-ublt)
+    k2t~dunif(lb,ubrt-c)
+    a2lt~dunif(0,(1-j)/(c-k1t-MIN))
+    b2lt~dunif(-a2lt*MIN,1-j-a2lt*(c-k1t))
+    a1lt~dunif(0,(1-j-a2lt*(c-k1t)-b2lt)/k1t)
+    b1lt=(c-k1t)*(a2lt-a1lt)+b2lt
+    a1rt~dunif(0,(1-a1lt*c-b1lt-j)/k2t)
+    b1rt=a1lt*c+b1lt+j-a1rt*c
+    a2rt~dunif(0,(1-b1rt-(c+k2t)*a1rt)/(MAX-c-k2t))
+    b2rt=(c+k2t)*(a1rt-a2rt)+b1rt
+
+
+    }
