@@ -5,5 +5,6 @@ It implements the methods outlined in _Bayesian Regression Discontinuity Design 
 To install the package use the following code:
 
 library(devtools)
+
 install_github("JuliaMKowalska/LoTTA")
  
