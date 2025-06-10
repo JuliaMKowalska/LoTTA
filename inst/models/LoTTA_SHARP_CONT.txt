@@ -12,7 +12,7 @@ model
     ### Define the priors
     xc=x-c
 
-    tau1l~dchisqr(df)
+    tau1l~dgamma(shape, scale)
     tau2pl~dbeta(1,1)
     tau2l=-tau2pl*tau1l
     kl~dunif(ubl,c-lb)
@@ -21,7 +21,7 @@ model
     a2l~dnorm(0,pr*(c-kl))
     a3l~dnorm(0,pr*(c-kl))
 
-    tau1r~dchisqr(df)
+    tau1r~dgamma(shape, scale)
     tau2pr~dbeta(1,1)
     tau2r=-tau2pr*tau1r
     kr~dunif(c+lb,ubr)
