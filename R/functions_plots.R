@@ -1,34 +1,34 @@
 #' Function that splits the data into bins and computes the average in each bin
-#' @param Y - is the outcome data
-#' @param X - is the score data
+#' @param y - is the outcome data
+#' @param x - is the score data
 #' @param c - specifies the cutoff point, set to NULL if the binning of the data should be independent from c
 #' @param binsize - length of the interval that is one bin
-#' @return list with elements Y_bin: list of average values of Y in each bin, X_bin: list of middle points for each bin
+#' @return list with elements y_bin: list of average values of y in each bin, x_bin: list of middle points for each bin
 
-Bin_data<-function(Y,X,c=NULL,binsize=0.2){
+Bin_data<-function(y,x,c=NULL,binsize=0.2){
   if(is.null(c)==1){
-    L=seq(min(X),max(X),binsize)
+    L=seq(min(x),max(x),binsize)
   }
   else{
-    L=seq(min(X),c,binsize)
-    L=append(L,seq(c,max(X),binsize))
+    L=seq(min(x),c,binsize)
+    L=append(L,seq(c,max(x),binsize))
   }
 
-  L=append(L,c(max(X)+0.0000001))
+  L=append(L,c(max(x)+0.0000001))
   L=unique(L)
-  groups <- cut(X, L,right=FALSE,labels = L[-length(L)])
+  groups <- cut(x, L,right=FALSE,labels = L[-length(L)])
   Group<-as.numeric(groups)
-  Binned_X=as.numeric(lapply(split(X, groups), mean))
-  Binned=lapply(split(Y, groups), mean)
+  Binned_x=as.numeric(lapply(split(x, groups), mean))
+  Binned=lapply(split(y, groups), mean)
   Binned=as.numeric(Binned)
-  return(list('Y_binned'=Binned,'X_binned'= Binned_X))
+  return(list('y_binned'=Binned,'x_binned'= Binned_x))
 }
 
 #' Function that evaluates the binary outcome function in a domain x, given the coefficients
 #' @param coef_s - list with the function coefficients
 #' @param x - points at which the function is evaluated
-#' @param d_x - shifting parameter that was used to normalize X
-#' @param s_x - scaling parameter that was used to normalize X
+#' @param d_x - shifting parameter that was used to normalize x
+#' @param s_x - scaling parameter that was used to normalize x
 #' @return list with the values of the function
 
 BIN_outcome_function_sample<-function(coef_s,x,d_x,s_x){
@@ -61,10 +61,10 @@ BIN_outcome_function_sample<-function(coef_s,x,d_x,s_x){
 #' Function that evaluates the continuous outcome function in a domain x, given the coefficients
 #' @param coef_s - list with the function coefficients
 #' @param x - points at which the function is evaluated
-#' @param d_x - shifting parameter that was used to normalize X
-#' @param s_x - scaling parameter that was used to normalize X
-#' @param mu_y - shifting parameter that was used to normalize Y
-#' @param sd_y - scaling parameter that was used to normalize Y
+#' @param d_x - shifting parameter that was used to normalize x
+#' @param s_x - scaling parameter that was used to normalize x
+#' @param mu_y - shifting parameter that was used to normalize y
+#' @param sd_y - scaling parameter that was used to normalize y
 #' @return list with the values of the function
 
 CONT_outcome_function_sample<-function(coef_s,x,d_x,s_x,mu_y,sd_y){
@@ -92,8 +92,8 @@ CONT_outcome_function_sample<-function(coef_s,x,d_x,s_x,mu_y,sd_y){
 #' Function that evaluates the treatment probability function in a domain x, given the coefficients
 #' @param coef_s - list with the function coefficients
 #' @param x - points at which the function is evaluated
-#' @param d_x - shifting parameter that was used to normalize X
-#' @param s_x - scaling parameter that was used to normalize X
+#' @param d_x - shifting parameter that was used to normalize x
+#' @param s_x - scaling parameter that was used to normalize x
 #' @return list with the values of the function
 
 treatment_function_sample<-function(coef_s,x,d_x,s_x){
@@ -130,7 +130,7 @@ treatment_function_sample<-function(coef_s,x,d_x,s_x){
 #' the middle value defines the quantile of the posterior function to plot;
 #' by default the quantiles correspond to the median posterior function and 95% credible interval
 #' probs=c(0.025,0.5,0.975)
-#' @param n_eval - n_eval*range(X) is the number of points at which each posterior function is evaluated,
+#' @param n_eval - n_eval*range(x) is the number of points at which each posterior function is evaluated,
 #' the higher number means slower computing time and a smoother plot; default n_eval=200
 #' @param col_line - the color of the line and the band
 #' @param size_line - thickness of the line
@@ -168,16 +168,16 @@ treatment_function_sample<-function(coef_s,x,d_x,s_x){
 #' @import ggpubr
 
 plot_outcome_BIN<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_eval=200,col_line='#E69F00',size_line=0.1,alpha_interval=0.35,col_dots='gray',size_dots=3,alpha_dots=0.6,col_cutoff='black',
-                           title="Outcome function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('X')," - score")) ,plot.theme=theme_classic(base_size = 14),
+                           title="Outcome function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('x')," - score")) ,plot.theme=theme_classic(base_size = 14),
                            legend.position='none', name_legend='Legend', labels_legend = 'median outcome fun.',
                            text=element_text(family='serif'),legend.text=element_text(size = 14),
                            plot.title = element_text(hjust = 0.5),plot.subtitle=element_text(hjust = 0.5),...){
   LoTTA_jags=LoTTA_posterior$JAGS_output
   Samples_FULL=data.frame(data.frame(combine.mcmc(LoTTA_jags)))
-  d_x=LoTTA_posterior$Normalized_data$d_X
-  s_x=LoTTA_posterior$Normalized_data$s_X
-  X=LoTTA_posterior$Normalized_data$'X'*s_x+d_x
-  Y=LoTTA_posterior$Normalized_data$'Y'
+  d_x=LoTTA_posterior$Normalized_data$d_x
+  s_x=LoTTA_posterior$Normalized_data$s_x
+  x=LoTTA_posterior$Normalized_data$'x'*s_x+d_x
+  y=LoTTA_posterior$Normalized_data$'y'
   if(is.null(LoTTA_posterior$Effect_estimate$`MAP cutoff`)==TRUE){
     c=LoTTA_posterior$Normalized_data$c
     Samples_FULL[,'c']=rep(c,nrow(Samples_FULL))
@@ -185,24 +185,24 @@ plot_outcome_BIN<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_
   else{
     c=LoTTA_posterior$Effect_estimate$`MAP cutoff`
   }
-  rangeX=max(X)-min(X)
-  binsize=rangeX/nbins
-  binned_data=Bin_data(Y,X,c,binsize)
-  X_plot=binned_data[[2]]
-  Y_plot=binned_data[[1]]
+  rangex=max(x)-min(x)
+  binsize=rangex/nbins
+  binned_data=Bin_data(y,x,c,binsize)
+  x_plot=binned_data[[2]]
+  y_plot=binned_data[[1]]
 
-  x=seq(min(X),max(X),length.out = n_eval*rangeX)
-  fun_sampleF=apply(Samples_FULL,1,BIN_outcome_function_sample,x=x,d_x=d_x,s_x=s_x)
+  x_range=seq(min(x),max(x),length.out = n_eval*rangex)
+  fun_sampleF=apply(Samples_FULL,1,BIN_outcome_function_sample,x=x_range,d_x=d_x,s_x=s_x)
   q_funF=apply(fun_sampleF,1,quantile,probs=probs)
-  plot.df=data.frame('X'=X_plot,'Y'=Y_plot)
+  plot.df=data.frame('x'=x_plot,'y'=y_plot)
   lower95=q_funF[1,]
   upper95=q_funF[3,]
-  lineF.df=data.frame(X=x,Y=q_funF[2,],lower95=lower95,upper95=upper95)
+  lineF.df=data.frame(x=x_range,y=q_funF[2,],lower95=lower95,upper95=upper95)
   theme_def=plot.theme
-  ggscatter(plot.df, x = "X", y = "Y",
+  ggscatter(plot.df, x = "x", y = "y",
             color = col_dots,
             size = size_dots, alpha = alpha_dots)+geom_vline(xintercept = c,linetype='dotted',color=col_cutoff)+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-    geom_ribbon(aes(x=X,y=Y,ymin = lower95, ymax = upper95,fill='Full'),data=lineF.df,alpha=alpha_interval)+geom_point(aes(x=X,y=Y),data=lineF.df,size=size_line,col=col_line)+
+    geom_ribbon(aes(x=x,y=y,ymin = lower95, ymax = upper95,fill='Full'),data=lineF.df,alpha=alpha_interval)+geom_point(aes(x=x,y=y),data=lineF.df,size=size_line,col=col_line)+
     labs( y=y_lab, x=x_lab,title=title,subtitle = subtitle)+theme_def+
     theme(text = text,legend.text =legend.text,plot.title = plot.title,plot.subtitle = plot.subtitle,legend.position = legend.position,...)+ scale_fill_manual(name=name_legend,values=c('Full'=col_line),labels = labels_legend)
 
@@ -219,7 +219,7 @@ plot_outcome_BIN<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_
 #' the middle value defines the quantile of the posterior function to plot;
 #' by default the quantiles correspond to the median posterior function and 95% credible interval
 #' probs=c(0.025,0.5,0.975)
-#' @param n_eval - n_eval*range(X) is the number of points at which each posterior function is evaluated,
+#' @param n_eval - n_eval*range(x) is the number of points at which each posterior function is evaluated,
 #' the higher number means slower computing time and a smoother plot; default n_eval=200
 #' @param col_line - the color of the line and the band
 #' @param size_line - thickness of the line
@@ -257,18 +257,18 @@ plot_outcome_BIN<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_
 #' @import ggpubr
 
 plot_outcome_CONT<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_eval=200,col_line='#E69F00',size_line=0.1,alpha_interval=0.35,col_dots='gray',size_dots=3,alpha_dots=0.6,col_cutoff='black',
-                            title="Outcome function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('X')," - score")) ,plot.theme=theme_classic(base_size = 14),
+                            title="Outcome function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('x')," - score")) ,plot.theme=theme_classic(base_size = 14),
                             legend.position='none', name_legend='Legend', labels_legend = 'median outcome fun.',
                             text=element_text(family='serif'),legend.text=element_text(size = 14),
                             plot.title = element_text(hjust = 0.5),plot.subtitle=element_text(hjust = 0.5),...){
   LoTTA_jags=LoTTA_posterior$JAGS_output
   Samples_FULL=data.frame(data.frame(combine.mcmc(LoTTA_jags)))
-  d_x=LoTTA_posterior$Normalized_data$d_X
-  s_x=LoTTA_posterior$Normalized_data$s_X
-  mu_y=LoTTA_posterior$Normalized_data$mu_Y
-  sd_y=LoTTA_posterior$Normalized_data$sd_Y
-  X=LoTTA_posterior$Normalized_data$'X'*s_x+d_x
-  Y=LoTTA_posterior$Normalized_data$'Y'*sd_y+mu_y
+  d_x=LoTTA_posterior$Normalized_data$d_x
+  s_x=LoTTA_posterior$Normalized_data$s_x
+  mu_y=LoTTA_posterior$Normalized_data$mu_y
+  sd_y=LoTTA_posterior$Normalized_data$sd_y
+  x=LoTTA_posterior$Normalized_data$'x'*s_x+d_x
+  y=LoTTA_posterior$Normalized_data$'y'*sd_y+mu_y
   if(is.null(LoTTA_posterior$Effect_estimate$`MAP cutoff`)==TRUE){
     c=LoTTA_posterior$Normalized_data$c
     Samples_FULL[,'c']=rep(c,nrow(Samples_FULL))
@@ -276,24 +276,24 @@ plot_outcome_CONT<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n
   else{
     c=LoTTA_posterior$Effect_estimate$`MAP cutoff`
   }
-  rangeX=max(X)-min(X)
-  binsize=rangeX/nbins
-  binned_data=Bin_data(Y,X,c,binsize)
-  X_plot=binned_data[[2]]
-  Y_plot=binned_data[[1]]
+  rangex=max(x)-min(x)
+  binsize=rangex/nbins
+  binned_data=Bin_data(y,x,c,binsize)
+  x_plot=binned_data[[2]]
+  y_plot=binned_data[[1]]
 
-  x=seq(min(X),max(X),length.out = n_eval*rangeX)
-  fun_sampleF=apply(Samples_FULL,1,CONT_outcome_function_sample,x=x,d_x=d_x,s_x=s_x,mu_y=mu_y,sd_y=sd_y)
+  x_range=seq(min(x),max(x),length.out = n_eval*rangex)
+  fun_sampleF=apply(Samples_FULL,1,CONT_outcome_function_sample,x=x_range,d_x=d_x,s_x=s_x,mu_y=mu_y,sd_y=sd_y)
   q_funF=apply(fun_sampleF,1,quantile,probs=probs)
-  plot.df=data.frame('X'=X_plot,'Y'=Y_plot)
+  plot.df=data.frame('x'=x_plot,'y'=y_plot)
   lower95=q_funF[1,]
   upper95=q_funF[3,]
-  lineF.df=data.frame(X=x,Y=q_funF[2,],lower95=lower95,upper95=upper95)
+  lineF.df=data.frame(x=x_range,y=q_funF[2,],lower95=lower95,upper95=upper95)
   theme_def=plot.theme
-  ggscatter(plot.df, x = "X", y = "Y",
+  ggscatter(plot.df, x = "x", y = "y",
             color = col_dots,
             size = size_dots, alpha = alpha_dots)+geom_vline(xintercept = c,linetype='dotted',color=col_cutoff)+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-    geom_ribbon(aes(x=X,y=Y,ymin = lower95, ymax = upper95,fill='Full'),data=lineF.df,alpha=alpha_interval)+geom_point(aes(x=X,y=Y),data=lineF.df,size=size_line,col=col_line)+
+    geom_ribbon(aes(x=x,y=y,ymin = lower95, ymax = upper95,fill='Full'),data=lineF.df,alpha=alpha_interval)+geom_point(aes(x=x,y=y),data=lineF.df,size=size_line,col=col_line)+
     labs( y=y_lab, x=x_lab,title=title,subtitle = subtitle)+theme_def+
     theme(text = text,legend.text =legend.text,plot.title = plot.title,plot.subtitle = plot.subtitle,legend.position = legend.position,...)+ scale_fill_manual(name=name_legend,values=c('Full'=col_line),labels = labels_legend)
 
@@ -313,7 +313,7 @@ plot_outcome_CONT<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n
 #' the middle value defines the quantile of the posterior function to plot;
 #' by default the quantiles correspond to the median posterior function and 95% credible interval
 #' probs=c(0.025,0.5,0.975)
-#' @param n_eval - n_eval*range(X) is the number of points at which each posterior function is evaluated,
+#' @param n_eval - n_eval*range(x) is the number of points at which each posterior function is evaluated,
 #' the higher number means slower computing time and a smoother plot; default n_eval=200
 #' @param col_line - the color of the line and the band
 #' @param size_line - thickness of the line
@@ -351,45 +351,64 @@ plot_outcome_CONT<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n
 #' @import ggpubr
 #' @export
 #' @examples
-#' # code to generate the data
+#' # functions to generate the data
 #'
-#' invlogit <- function(x) {
+#' ilogit <- function(x) {
 #'   return(1 / (1 + exp(-x)))
 #' }
 #'
-#' funB <- function(X) {
-#'   Y = X
-#'   X2 = X[X >= 0]
-#'   X1 = X[X < 0]
-#'   Y[X < 0] = 1 / (1 + exp(-2 * X1)) - 0.5 + 0.4
-#'   Y[X >= 0] = (log(X2 * 2 + 1) - 0.15 * X2^2) * 0.6 - 0.20 + 0.4
-#'   return(Y)
+#' funB <- function(x) {
+#'   y = x
+#'   x2 = x[x >= 0]
+#'   x1 = x[x < 0]
+#'   y[x < 0] = 1 / (1 + exp(-2 * x1)) - 0.5 + 0.4
+#'   y[x >= 0] = (log(x2 * 2 + 1) - 0.15 * x2^2) * 0.6 - 0.20 + 0.4
+#'   return(y)
 #' }
 #'
-#' funB_sample <- function(X) {
-#'   Y = funB(X)+ rnorm(length(X), 0, 0.025)
-#'   return(Y)
+#' funB_sample <- function(x) {
+#'   y = funB(x)+ rnorm(length(x), 0, 0.1)
+#'   return(y)
 #' }
-#'
+#' ## Toy example - for the function check only! ##
 #' # data generation
-#' N=150 # try different dataset size
+#' N=100
 #' set.seed(1234)
-#' X = sort(runif(N, -1, 1))
-#' Y = funB_sample(X)
+#' x = sort(runif(N, -1, 1))
+#' y = funB_sample(x)
 #' c = 0
 #'
 #' # running LoTTA function on sharp RDD with continuous outcomes;
-#' # cutoff = 0, treatment effect = -0.2
-#' # remember to check convergence and adjust burnin, sample and adapt if needed
-#' out = LoTTA_sharp_CONT(X, Y, c, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
-#' LoTTA_plot_outcome(out,n_eval=100)
+#' out = LoTTA_sharp_CONT(x, y, c,normalize=FALSE, burnin = 100, sample = 100, adapt = 100,
+#' n.chains=1, seed = NULL,method = 'simple',inits = NA)
+#' # plot the outcome
+#' LoTTA_plot_outcome(out,n_eval = 100)
+#'
+#' ## Use case example ##
+#' \dontrun{# data generation
+#'   N=500 # try different dataset size
+#'   x = sort(runif(N, -1, 1))
+#'   y = funB_sample(x)
+#'   c = 0
+#'   # plot the data
+#'   plot(x,y)
+#'   # running LoTTA function on sharp RDD with continuous outcomes;
+#'   # cutoff = 0, treatment effect = -0.2
+#'   # remember to check convergence and adjust burnin, sample and adapt if needed
+#'   out = LoTTA_sharp_CONT(x, y, c, burnin = 10000, sample = 5000, adapt = 1000,n.chains=4)
+#'   # print effect estimate:
+#'   out$Effect_estimate
+#'   # print JAGS output to asses convergence (the output is for normalized data)
+#'   out$JAGS_output
+#'   # plot posterior fit
+#'   LoTTA_plot_outcome(out)}
 
 LoTTA_plot_outcome<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_eval=200,col_line='#E69F00',size_line=0.1,alpha_interval=0.35,col_dots='gray',size_dots=3,alpha_dots=0.6,col_cutoff='black',
-                             title="Outcome function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('X')," - score")) ,plot.theme=theme_classic(base_size = 14),
+                             title="Outcome function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('x')," - score")) ,plot.theme=theme_classic(base_size = 14),
                              legend.position='none', name_legend='Legend', labels_legend = 'median outcome fun.',
                              text=element_text(family='serif'),legend.text=element_text(size = 14),
                              plot.title = element_text(hjust = 0.5),plot.subtitle=element_text(hjust = 0.5),...){
-  if(length(LoTTA_posterior$Priors$`Outcome prior`)==2){
+  if(length(LoTTA_posterior$Priors$`Outcome prior`)>1){
     plot_outcome_CONT(LoTTA_posterior,nbins,probs,n_eval,col_line,size_line,alpha_interval,col_dots,size_dots,alpha_dots,col_cutoff,
                       title,subtitle,y_lab,x_lab ,plot.theme,legend.position, name_legend, labels_legend,text,legend.text,plot.title,plot.subtitle,...)
 
@@ -417,7 +436,7 @@ LoTTA_plot_outcome<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),
 #' the middle value defines the quantile of the posterior function to plot;
 #' by default the quantiles correspond to the median posterior function and 95% credible interval
 #' probs=c(0.025,0.5,0.975)
-#' @param n_eval - n_eval*range(X) is the number of points at which each posterior function is evaluated,
+#' @param n_eval - n_eval*range(x) is the number of points at which each posterior function is evaluated,
 #' the higher number means slower computing time and a smoother plot; default n_eval=200
 #' @param col_line - the color of the line and the band
 #' @param size_line - thickness of the line
@@ -455,58 +474,81 @@ LoTTA_plot_outcome<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),
 #' @import ggpubr
 #' @export
 #' @examples
-#' # code to generate the data
+#' # functions to generate the data
 #'
-#' invlogit <- function(x) {
+#' ilogit <- function(x) {
 #'   return(1 / (1 + exp(-x)))
 #' }
 #'
-#' fun_prob55 <- function(X) {
-#'   P = rep(0, length(X))
-#'   P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-#'   P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
+#' fun_prob55 <- function(x) {
+#'   P = rep(0, length(x))
+#'   P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+#'   P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
 #'   return(P)
 #' }
 #'
-#' sample_prob55 <- function(X) {
-#'   P = rep(0, length(X))
-#'   P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-#'   P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
-#'   T = rep(0, length(X))
-#'   for (j in 1:length(X)) {
-#'     T[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
+#' sample_prob55 <- function(x) {
+#'   P = rep(0, length(x))
+#'   P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+#'   P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
+#'   t = rep(0, length(x))
+#'   for (j in 1:length(x)) {
+#'     t[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
 #'   }
-#'   return(T)
+#'   return(t)
 #' }
 #'
-#' # data generation
-#' N=150 # try different dataset size
-#' set.seed(1234)
-#' X = sort(runif(N, -1, 1))
-#' T = sample_prob55(X)
 #'
-#' # comment out to try different priors:
-#' c_prior=0 # known cutoff c=0
-#' # c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
-#' # c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior on -0.25, -0.2, ..., 0.25
 #'
-#' # running LoTTA model on the treatment allocation data;
-#' # cutoff = 0, compliance rate = 0.55
-#' # remember to check convergence and adjust burnin, sample and adapt if needed
-#' out = LoTTA_treatment(X, T, c_prior, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
-#' LoTTA_plot_treatment(out,nbins =15,n_eval = 100)
+#' ## Toy example - for the function check only! ##
+#' N=100
+#' x = sort(runif(N, -1, 1))
+#' t = sample_prob55(x)
+#' c_prior=0 # known cutoff
+#'
+#' # running LoTTA treatment-only model;
+#' out = LoTTA_treatment(x,t,c_prior,burnin = 50, sample = 50, adapt = 10,n.chains=1
+#'                       ,method = 'simple',inits = NA)
+#' # plot posterior fit of the treatment probablity function
+#' LoTTA_plot_treatment(out,nbins = 60)
+#'
+#' ## Use case example ##
+#' \dontrun{
+#'   N=500
+#'   x = sort(runif(N, -1, 1))
+#'   t = sample_prob55(x)
+#'
+#'   # comment out to try different priors:
+#'    c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
+#'   #  c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior
+#'   # on -0.25, -0.2, ..., 0.25
+#'   # c_prior=0 # known cutoff c=0
+#'
+#'   # running LoTTA treatment-only model;
+#'   # cutoff = 0, compliance rate = 0.55
+#'   # remember to check convergence and adjust burnin, sample and adapt if needed
+#'   out = LoTTA_treatment(x,t,c_prior,burnin = 10000,sample = 5000,adapt=1000)
+#'
+#'   # print effect estimate:
+#'   out$Effect_estimate
+#'   # print JAGS output to asses convergence (the output is for normalized data)
+#'   out$JAGS_output
+#'   # plot posterior fit of the treatment probablity function
+#'   LoTTA_plot_treatment(out,nbins = 60)
+#'
+#' }
 
 LoTTA_plot_treatment<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975),n_eval=200,col_line='#E69F00',size_line=0.1,alpha_interval=0.35,col_dots='gray',size_dots=3,alpha_dots=0.6,col_cutoff='black',
-                               title="Treatment probability function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('X')," - score")) ,plot.theme=theme_classic(base_size = 14),
+                               title="Treatment probability function",subtitle=NULL,y_lab="",x_lab=expression(paste(italic('x')," - score")) ,plot.theme=theme_classic(base_size = 14),
                                legend.position='none', name_legend='Legend', labels_legend = 'median treatment prob. fun.',
                                text=element_text(family='serif'),legend.text=element_text(size = 14),
                                plot.title = element_text(hjust = 0.5),plot.subtitle=element_text(hjust = 0.5),...){
   LoTTA_jags=LoTTA_posterior$JAGS_output
   Samples_FULL=data.frame(data.frame(combine.mcmc(LoTTA_jags)))
-  d_x=LoTTA_posterior$Normalized_data$d_X
-  s_x=LoTTA_posterior$Normalized_data$s_X
-  X=LoTTA_posterior$Normalized_data$'X'*s_x+d_x
-  T=LoTTA_posterior$Normalized_data$'T'
+  d_x=LoTTA_posterior$Normalized_data$d_x
+  s_x=LoTTA_posterior$Normalized_data$s_x
+  x=LoTTA_posterior$Normalized_data$'x'*s_x+d_x
+  t=LoTTA_posterior$Normalized_data$'t'
   if(is.null(LoTTA_posterior$Effect_estimate$`MAP cutoff`)==TRUE){
     c=LoTTA_posterior$Normalized_data$c
     Samples_FULL[,'c']=rep(c,nrow(Samples_FULL))
@@ -514,25 +556,25 @@ LoTTA_plot_treatment<-function(LoTTA_posterior,nbins=100,probs=c(0.025,0.5,0.975
   else{
     c=LoTTA_posterior$Effect_estimate$`MAP cutoff`
   }
-  rangeX=max(X)-min(X)
-  binsize=rangeX/nbins
-  binned_data=Bin_data(T,X,c,binsize)
-  X_plot=binned_data[[2]]
-  T_plot=binned_data[[1]]
+  rangex=max(x)-min(x)
+  binsize=rangex/nbins
+  binned_data=Bin_data(t,x,c,binsize)
+  x_plot=binned_data[[2]]
+  t_plot=binned_data[[1]]
 
-  x=seq(min(X),max(X),length.out = n_eval*rangeX)
-  fun_sampleF=apply(Samples_FULL,1,treatment_function_sample,x=x,d_x=d_x,s_x=s_x)
+  x_range=seq(min(x),max(x),length.out = n_eval*rangex)
+  fun_sampleF=apply(Samples_FULL,1,treatment_function_sample,x=x_range,d_x=d_x,s_x=s_x)
   q_funF=apply(fun_sampleF,1,quantile,probs=probs)
-  plot.df=data.frame('X'=X_plot,'Y'=T_plot)
+  plot.df=data.frame('x'=x_plot,'y'=t_plot)
   lower95=q_funF[1,]
   upper95=q_funF[3,]
-  Y=q_funF[2,]
-  lineF.df=data.frame(X=x,Y=Y,lower95=lower95,upper95=upper95)
+  y=q_funF[2,]
+  lineF.df=data.frame(x=x_range,y=y,lower95=lower95,upper95=upper95)
   theme_def=plot.theme
-  ggscatter(plot.df, x = "X", y = "Y",
+  ggscatter(plot.df, x = "x", y = "y",
             color = col_dots,
             size = size_dots, alpha = alpha_dots)+geom_vline(xintercept = c,linetype='dotted',color=col_cutoff)+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-    geom_ribbon(aes(x=X,y=Y,ymin = lower95, ymax = upper95,fill='Full'),data=lineF.df,alpha=alpha_interval)+geom_point(aes(x=X,y=Y),data=lineF.df,size=size_line,col=col_line)+
+    geom_ribbon(aes(x=x,y=y,ymin = lower95, ymax = upper95,fill='Full'),data=lineF.df,alpha=alpha_interval)+geom_point(aes(x=x,y=y),data=lineF.df,size=size_line,col=col_line)+
     labs( y=y_lab, x=x_lab,title=title,subtitle = subtitle)+theme_def+
     theme(text = text,legend.text =legend.text,plot.title = plot.title,plot.subtitle = plot.subtitle,legend.position = legend.position,...)+ scale_fill_manual(name=name_legend,values=c('Full'=col_line),labels = labels_legend)
 
@@ -647,7 +689,7 @@ LoTTA_plot_effect_DIS<-function(LoTTA_posterior,probs = c(0.025,0.975),x_lab="Cu
 #' (the number of intervals can be changed through nbins).
 #' @param LoTTA_posterior - output of one of the LoTTA functions (LoTTA_fuzzy_CONT, LoTTA_fuzzy_BIN)
 #' with all parameters sampled (the default option in those functions)
-#' @param nbins - number of bins to aggregate the input data
+#' @param nbins - number of bins to aggregate the values of the posterior cutoff location
 #' @param probs - list of two quantiles that limit the range of cutoff values displayed on the plots
 #' @param x_lab - label of the x-axis
 #' @param y_lab1 - label of the y-axis of the bottom plot
@@ -673,54 +715,73 @@ LoTTA_plot_effect_DIS<-function(LoTTA_posterior,probs = c(0.025,0.975),x_lab="Cu
 #' @import ggpubr
 #' @export
 #' @examples
-#' \donttest{ # code to generate the data
+#' # functions to generate the data
 #'
-#' invlogit <- function(x) {
+#' ilogit <- function(x) {
 #'   return(1 / (1 + exp(-x)))
 #' }
 #'
-#' fun_prob55 <- function(X) {
-#'   P = rep(0, length(X))
-#'   P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-#'   P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
+#' fun_prob55 <- function(x) {
+#'   P = rep(0, length(x))
+#'   P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+#'   P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
 #'   return(P)
 #' }
 #'
-#' sample_prob55 <- function(X) {
-#'   P = rep(0, length(X))
-#'   P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-#'   P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
-#'   T = rep(0, length(X))
-#'   for (j in 1:length(X)) {
-#'     T[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
+#' sample_prob55 <- function(x) {
+#'   P = rep(0, length(x))
+#'   P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+#'   P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
+#'   t = rep(0, length(x))
+#'   for (j in 1:length(x)) {
+#'     t[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
 #'   }
-#'   return(T)
+#'   return(t)
 #' }
 #'
-#' funC <- function(X) {
-#'   Y = X
-#'   Y = 1 / (1 + exp(-2 * X)) - 0.5 + 0.4
-#'   return(Y)
+#' funB <- function(x) {
+#'   y = x
+#'   x2 = x[x >= 0]
+#'   x1 = x[x < 0]
+#'   y[x < 0] = 1 / (1 + exp(-2 * x1)) - 0.5 + 0.4
+#'   y[x >= 0] = (log(x2 * 2 + 1) - 0.15 * x2^2) * 0.6 - 0.20 + 0.4
+#'   return(y)
 #' }
 #'
-#' funC_sample <- function(X) {
-#'   Y = funC(X)+ rnorm(length(X), 0, 0.025)
-#'   return(Y)
+#' funB_sample <- function(x) {
+#'   y = funB(x)+ rnorm(length(x), 0, 0.1)
+#'   return(y)
 #' }
 #'
-#' # data generation
-#' N=150 # try different dataset size
-#' set.seed(1234)
-#' X = sort(runif(N, -1, 1))
-#' T = sample_prob55(X)
-#' Y = funC_sample(X)
-#' c_prior=list(clb=-0.25,cub=0.25)
+#' ## Use case example ##
+#' \donttest{
+#'   N=500
+#'   x = sort(runif(N, -1, 1))
+#'   t = sample_prob55(x)
+#'   y = funB_sample(x)
+#'   # comment out to try different priors:
+#'    c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
+#'   # c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior
+#'   # on -0.25, -0.2, ..., 0.25
+#'   # c_prior=0 # known cutoff c=0
 #'
-#' # running LoTTA function on sharp RDD with continuous outcomes;
-#' # cutoff = 0, treatment effect = 0
-#' # remember to check convergence and adjust burnin, sample and adapt if needed
-#' out = LoTTA_fuzzy_CONT(X,T,Y,c_prior,burnin = 6000,sample = 2000,adapt=1000,seed=1234)
-#' LoTTA_plot_effect(out,nbins = 15)}
+#'   # running LoTTA model on fuzzy RDD with continuous outcomes and unknown cutoff;
+#'   # cutoff = 0, compliance rate = 0.55, treatment effect = -0.3636364
+#'   # remember to check convergence and adjust burnin, sample and adapt if needed
+#'   out = LoTTA_fuzzy_CONT(x,t,y,c_prior,burnin = 10000,sample = 5000,adapt=1000)
+#'
+#'   # print effect estimate:
+#'   out$Effect_estimate
+#'   # print JAGS output to asses convergence (the output is for normalized data)
+#'   out$JAGS_output
+#'   # plot posterior fit of the outcome function
+#'   LoTTA_plot_outcome(out,nbins = 60)
+#'   # plot posterior fit of the treatment probablity function
+#'   LoTTA_plot_treatment(out,nbins = 60)
+#'   # plot dependence of the treatment effect on the cutoff location
+#'   LoTTA_plot_effect(out)
+#'
+#' }
 
 LoTTA_plot_effect<-function(LoTTA_posterior,nbins=10,probs=c(0.025,0.975),x_lab="Cutoff location",y_lab1="Treatment effect",y_lab2="Density of cutoff location",title="Cutoff location vs. Treatment effect",
                             axis.text=element_text(family = "sans",size = 10),text=element_text(family='serif'),plot.theme=theme_classic(base_size = 14),plot.title = element_text(hjust = 0.5),...){
