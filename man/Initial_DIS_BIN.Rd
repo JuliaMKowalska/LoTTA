@@ -4,18 +4,18 @@
 \alias{Initial_DIS_BIN}
 \title{function that samples initial values for LoTTA with a discerete prior and binary ourcomes}
 \usage{
-Initial_DIS_BIN(X, T, Y, Ct_start, cstart, grid, lb, ubr, ubl, s, jlb = 0.2)
+Initial_DIS_BIN(x, t, y, Ct_start, cstart, grid, lb, ubr, ubl, s, jlb = 0.2)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 
-\item{T}{\itemize{
+\item{t}{\itemize{
 \item treatment data
 }}
 
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item outcome data
 }}
 

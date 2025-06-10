@@ -5,12 +5,12 @@
 \title{LoTTA_sharp_CONT}
 \usage{
 LoTTA_sharp_CONT(
-  X,
-  Y,
+  x,
+  y,
   c,
   ci = 0.95,
   trimmed = NULL,
-  outcome_prior = list(pr = 1e-04, df = 7),
+  outcome_prior = list(pr = 1e-04, shape = 0.01, scale = 0.01),
   n_min = 25,
   param = c("eff", "a0l", "a1l", "a2l", "a3l", "a0r", "a1r", "a2r", "a3r", "tau1r",
     "tau2r", "tau1l", "tau2l", "kl", "kr"),
@@ -26,11 +26,11 @@ LoTTA_sharp_CONT(
 )
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item is the score data
 }}
 
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item is the continuous outcome data
 }}
 
@@ -45,12 +45,12 @@ LoTTA_sharp_CONT(
 \item{trimmed}{\itemize{
 \item takes as a value NULL or a vector of two values. It specifies potential trimming of the data.
 If set to NULL no trimming is applied to the data. If a list of two values is provided the data is trimmed
-to include data points with the score X in between those values; deafult is trimmed=NULL
+to include data points with the score x in between those values; deafult is trimmed=NULL
 }}
 
 \item{outcome_prior}{\itemize{
-\item takes as a value a list with elements 'pr' and 'df'. 'pr' specifies precision in the normal priors on the coefficients in the
-outcome function. 'df' specifies degrees of freedom in the chisquare prior on the precision of the error terms; default is list('pr'=0.0001,'df'=7)
+\item takes as a value a list with elements 'pr' and 'shape', 'scale'. 'pr' specifies precision in the normal priors on the coefficients in the
+outcome function. 'shape' and 'scale' specify the shape and scale parameters in the gamma prior on the precision of the error terms; default is list('pr'= 0.0001,'shape'= 0.01,'scale'= 0.01)
 }}
 
 \item{n_min}{\itemize{
@@ -62,7 +62,7 @@ outcome function. 'df' specifies degrees of freedom in the chisquare prior on th
 }}
 
 \item{normalize}{\itemize{
-\item specifies if the data is to be normalized. The data is normalized as follows. X_normalized=(X-d)/s, where d=(min(X)+max(X))*0.5 and s=max(X)-min(X). Y_normalized=(Y-mu)/sd, where mu=mean(Y) and sd=sd(Y).
+\item specifies if the data is to be normalized. The data is normalized as follows. x_normalized=(x-d)/s, where d=(min(x)+max(x))*0.5 and s=max(x)-min(x). y_normalized=(y-mu)/sd, where mu=mean(y) and sd=sd(y).
 The priors inside the model are specified for the normalized data, in extreme cases not normalizing the data may lead to unreliable results; default is normalize=TRUE
 }}
 
@@ -83,8 +83,8 @@ The priors inside the model are specified for the normalized data, in extreme ca
 }}
 
 \item{inits}{\itemize{
-\item initial values for the sampler. By default the initial values are sampled inside the function. If user wants to provide
-its own values please refer to run.jags manual; default inits=NULL
+\item initial values for the sampler. By default the initial values are sampled inside the function. To run LoTTA with a method other than "parallel" inits must be set to NA or to a user defined value.
+If the user wants to provide its own values please refer to run.jags manual; default inits=NULL
 }}
 
 \item{method}{\itemize{
@@ -117,36 +117,54 @@ beforehand. We recommend NOT to transform the data before imputing it into the f
 The further trimming for the sensitivity analysis can be done through the function, which ensures that the data is normalized before the trimming.
 }
 \examples{
-# code to generate the data
+# functions to generate the data
 
-invlogit <- function(x) {
+ilogit <- function(x) {
   return(1 / (1 + exp(-x)))
 }
 
-funB <- function(X) {
-  Y = X
-  X2 = X[X >= 0]
-  X1 = X[X < 0]
-  Y[X < 0] = 1 / (1 + exp(-2 * X1)) - 0.5 + 0.4
-  Y[X >= 0] = (log(X2 * 2 + 1) - 0.15 * X2^2) * 0.6 - 0.20 + 0.4
-  return(Y)
+funB <- function(x) {
+  y = x
+  x2 = x[x >= 0]
+  x1 = x[x < 0]
+  y[x < 0] = 1 / (1 + exp(-2 * x1)) - 0.5 + 0.4
+  y[x >= 0] = (log(x2 * 2 + 1) - 0.15 * x2^2) * 0.6 - 0.20 + 0.4
+  return(y)
 }
 
-funB_sample <- function(X) {
-  Y = funB(X)+ rnorm(length(X), 0, 0.025)
-  return(Y)
+funB_sample <- function(x) {
+  y = funB(x)+ rnorm(length(x), 0, 0.1)
+  return(y)
 }
 
+## Toy example - for the function check only! ##
 # data generation
-N=150 # try different dataset size
+N=100
 set.seed(1234)
-X = sort(runif(N, -1, 1))
-Y = funB_sample(X)
+x = sort(runif(N, -1, 1))
+y = funB_sample(x)
 c = 0
 
 # running LoTTA function on sharp RDD with continuous outcomes;
-# cutoff = 0, treatment effect = -0.2
-# remember to check convergence and adjust burnin, sample and adapt if needed
-out = LoTTA_sharp_CONT(X, Y, c, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
+out = LoTTA_sharp_CONT(x, y, c,normalize=FALSE, burnin = 50, sample = 50, adapt = 10,
+n.chains=1, seed = NULL,method = 'simple',inits = NA)
 
+## Use case example ##
+\dontrun{# data generation
+  N=500 # try different dataset size
+  x = sort(runif(N, -1, 1))
+  y = funB_sample(x)
+  c = 0
+  # plot the data
+  plot(x,y)
+  # running LoTTA function on sharp RDD with continuous outcomes;
+  # cutoff = 0, treatment effect = -0.2
+  # remember to check convergence and adjust burnin, sample and adapt if needed
+  out = LoTTA_sharp_CONT(x, y, c, burnin = 10000, sample = 5000, adapt = 1000,n.chains=4)
+  # print effect estimate:
+  out$Effect_estimate
+  # print JAGS output to asses convergence (the output is for normalized data)
+  out$JAGS_output
+  # plot posterior fit
+  LoTTA_plot_outcome(out)}
 }

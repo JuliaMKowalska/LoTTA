@@ -4,14 +4,14 @@
 \alias{Initial_treatment_CONT}
 \title{function that samples initial values for the treatment model with a continuous prior}
 \usage{
-Initial_treatment_CONT(X, T, C_start, clb, cub, lb, ubr, ubl, s, jlb = 0.2)
+Initial_treatment_CONT(x, t, C_start, clb, cub, lb, ubr, ubl, s, jlb = 0.2)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 
-\item{T}{\itemize{
+\item{t}{\itemize{
 \item treatment data
 }}
 

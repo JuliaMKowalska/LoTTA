@@ -4,14 +4,14 @@
 \alias{Initial_treatment_DIS}
 \title{function that samples initial values for the treatment model with a discrete prior}
 \usage{
-Initial_treatment_DIS(X, T, Ct_start, cstart, grid, lb, ubr, ubl, s, jlb = 0.2)
+Initial_treatment_DIS(x, t, Ct_start, cstart, grid, lb, ubr, ubl, s, jlb = 0.2)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 
-\item{T}{\itemize{
+\item{t}{\itemize{
 \item treatment data
 }}
 

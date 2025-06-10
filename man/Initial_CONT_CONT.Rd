@@ -4,18 +4,18 @@
 \alias{Initial_CONT_CONT}
 \title{function that samples initial values for fuzzy LoTTA model with a ontinuous prior and continuous outcomes}
 \usage{
-Initial_CONT_CONT(X, T, Y, C_start, clb, cub, lb, ubr, ubl, s, jlb = 0.2)
+Initial_CONT_CONT(x, t, y, C_start, clb, cub, lb, ubr, ubl, s, jlb = 0.2)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 
-\item{T}{\itemize{
+\item{t}{\itemize{
 \item treatment data
 }}
 
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item outcome data
 }}
 

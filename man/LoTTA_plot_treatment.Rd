@@ -24,7 +24,7 @@ LoTTA_plot_treatment(
   title = "Treatment probability function",
   subtitle = NULL,
   y_lab = "",
-  x_lab = expression(paste(italic("X"), " - score")),
+  x_lab = expression(paste(italic("x"), " - score")),
   plot.theme = theme_classic(base_size = 14),
   legend.position = "none",
   name_legend = "Legend",
@@ -54,7 +54,7 @@ probs=c(0.025,0.5,0.975)
 }}
 
 \item{n_eval}{\itemize{
-\item n_eval*range(X) is the number of points at which each posterior function is evaluated,
+\item n_eval*range(x) is the number of points at which each posterior function is evaluated,
 the higher number means slower computing time and a smoother plot; default n_eval=200
 }}
 
@@ -161,44 +161,67 @@ The data is binned separately on each side of the cutoff, the cutoff is marked o
 with a dotted line. In case of an unknown cutoff, the MAP estimate is used.
 }
 \examples{
-# code to generate the data
+# functions to generate the data
 
-invlogit <- function(x) {
+ilogit <- function(x) {
   return(1 / (1 + exp(-x)))
 }
 
-fun_prob55 <- function(X) {
-  P = rep(0, length(X))
-  P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-  P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
+fun_prob55 <- function(x) {
+  P = rep(0, length(x))
+  P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+  P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
   return(P)
 }
 
-sample_prob55 <- function(X) {
-  P = rep(0, length(X))
-  P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-  P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
-  T = rep(0, length(X))
-  for (j in 1:length(X)) {
-    T[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
+sample_prob55 <- function(x) {
+  P = rep(0, length(x))
+  P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+  P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
+  t = rep(0, length(x))
+  for (j in 1:length(x)) {
+    t[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
   }
-  return(T)
+  return(t)
 }
 
-# data generation
-N=150 # try different dataset size
-set.seed(1234)
-X = sort(runif(N, -1, 1))
-T = sample_prob55(X)
 
-# comment out to try different priors:
-c_prior=0 # known cutoff c=0
-# c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
-# c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior on -0.25, -0.2, ..., 0.25
 
-# running LoTTA model on the treatment allocation data;
-# cutoff = 0, compliance rate = 0.55
-# remember to check convergence and adjust burnin, sample and adapt if needed
-out = LoTTA_treatment(X, T, c_prior, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
-LoTTA_plot_treatment(out,nbins =15,n_eval = 100)
+## Toy example - for the function check only! ##
+N=100
+x = sort(runif(N, -1, 1))
+t = sample_prob55(x)
+c_prior=0 # known cutoff
+
+# running LoTTA treatment-only model;
+out = LoTTA_treatment(x,t,c_prior,burnin = 50, sample = 50, adapt = 10,n.chains=1
+                      ,method = 'simple',inits = NA)
+# plot posterior fit of the treatment probablity function
+LoTTA_plot_treatment(out,nbins = 60)
+
+## Use case example ##
+\dontrun{
+  N=500
+  x = sort(runif(N, -1, 1))
+  t = sample_prob55(x)
+
+  # comment out to try different priors:
+   c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
+  #  c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior
+  # on -0.25, -0.2, ..., 0.25
+  # c_prior=0 # known cutoff c=0
+
+  # running LoTTA treatment-only model;
+  # cutoff = 0, compliance rate = 0.55
+  # remember to check convergence and adjust burnin, sample and adapt if needed
+  out = LoTTA_treatment(x,t,c_prior,burnin = 10000,sample = 5000,adapt=1000)
+
+  # print effect estimate:
+  out$Effect_estimate
+  # print JAGS output to asses convergence (the output is for normalized data)
+  out$JAGS_output
+  # plot posterior fit of the treatment probablity function
+  LoTTA_plot_treatment(out,nbins = 60)
+
+}
 }

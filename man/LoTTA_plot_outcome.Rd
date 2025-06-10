@@ -19,7 +19,7 @@ LoTTA_plot_outcome(
   title = "Outcome function",
   subtitle = NULL,
   y_lab = "",
-  x_lab = expression(paste(italic("X"), " - score")),
+  x_lab = expression(paste(italic("x"), " - score")),
   plot.theme = theme_classic(base_size = 14),
   legend.position = "none",
   name_legend = "Legend",
@@ -49,7 +49,7 @@ probs=c(0.025,0.5,0.975)
 }}
 
 \item{n_eval}{\itemize{
-\item n_eval*range(X) is the number of points at which each posterior function is evaluated,
+\item n_eval*range(x) is the number of points at which each posterior function is evaluated,
 the higher number means slower computing time and a smoother plot; default n_eval=200
 }}
 
@@ -156,36 +156,55 @@ The data is binned separately on each side of the cutoff, the cutoff is marked o
 with a dotted line. In case of an unknown cutoff, the MAP estimate is used.
 }
 \examples{
-# code to generate the data
+# functions to generate the data
 
-invlogit <- function(x) {
+ilogit <- function(x) {
   return(1 / (1 + exp(-x)))
 }
 
-funB <- function(X) {
-  Y = X
-  X2 = X[X >= 0]
-  X1 = X[X < 0]
-  Y[X < 0] = 1 / (1 + exp(-2 * X1)) - 0.5 + 0.4
-  Y[X >= 0] = (log(X2 * 2 + 1) - 0.15 * X2^2) * 0.6 - 0.20 + 0.4
-  return(Y)
+funB <- function(x) {
+  y = x
+  x2 = x[x >= 0]
+  x1 = x[x < 0]
+  y[x < 0] = 1 / (1 + exp(-2 * x1)) - 0.5 + 0.4
+  y[x >= 0] = (log(x2 * 2 + 1) - 0.15 * x2^2) * 0.6 - 0.20 + 0.4
+  return(y)
 }
 
-funB_sample <- function(X) {
-  Y = funB(X)+ rnorm(length(X), 0, 0.025)
-  return(Y)
+funB_sample <- function(x) {
+  y = funB(x)+ rnorm(length(x), 0, 0.1)
+  return(y)
 }
-
+## Toy example - for the function check only! ##
 # data generation
-N=150 # try different dataset size
+N=100
 set.seed(1234)
-X = sort(runif(N, -1, 1))
-Y = funB_sample(X)
+x = sort(runif(N, -1, 1))
+y = funB_sample(x)
 c = 0
 
 # running LoTTA function on sharp RDD with continuous outcomes;
-# cutoff = 0, treatment effect = -0.2
-# remember to check convergence and adjust burnin, sample and adapt if needed
-out = LoTTA_sharp_CONT(X, Y, c, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
-LoTTA_plot_outcome(out,n_eval=100)
+out = LoTTA_sharp_CONT(x, y, c,normalize=FALSE, burnin = 100, sample = 100, adapt = 100,
+n.chains=1, seed = NULL,method = 'simple',inits = NA)
+# plot the outcome
+LoTTA_plot_outcome(out,n_eval = 100)
+
+## Use case example ##
+\dontrun{# data generation
+  N=500 # try different dataset size
+  x = sort(runif(N, -1, 1))
+  y = funB_sample(x)
+  c = 0
+  # plot the data
+  plot(x,y)
+  # running LoTTA function on sharp RDD with continuous outcomes;
+  # cutoff = 0, treatment effect = -0.2
+  # remember to check convergence and adjust burnin, sample and adapt if needed
+  out = LoTTA_sharp_CONT(x, y, c, burnin = 10000, sample = 5000, adapt = 1000,n.chains=4)
+  # print effect estimate:
+  out$Effect_estimate
+  # print JAGS output to asses convergence (the output is for normalized data)
+  out$JAGS_output
+  # plot posterior fit
+  LoTTA_plot_outcome(out)}
 }

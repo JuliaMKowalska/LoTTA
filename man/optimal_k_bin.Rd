@@ -4,14 +4,14 @@
 \alias{optimal_k_bin}
 \title{function that searches for initial parameters of binary outcome function to initiate the sampler}
 \usage{
-optimal_k_bin(X, Y, c, lb, ubr, ubl)
+optimal_k_bin(x, y, c, lb, ubr, ubl)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item outcome data
 }}
 

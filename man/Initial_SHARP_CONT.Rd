@@ -4,14 +4,14 @@
 \alias{Initial_SHARP_CONT}
 \title{function that samples initial values for sharp LoTTA model with continuous outcomes}
 \usage{
-Initial_SHARP_CONT(X, Y, c, lb, ubr, ubl, s)
+Initial_SHARP_CONT(x, y, c, lb, ubr, ubl, s)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item outcome data
 }}
 

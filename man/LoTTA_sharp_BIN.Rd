@@ -5,8 +5,8 @@
 \title{LoTTA_sharp_BIN}
 \usage{
 LoTTA_sharp_BIN(
-  X,
-  Y,
+  x,
+  y,
   c,
   ci = 0.95,
   trimmed = NULL,
@@ -25,11 +25,11 @@ LoTTA_sharp_BIN(
 )
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item is the score data
 }}
 
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item is the binary outcome data
 }}
 
@@ -44,7 +44,7 @@ LoTTA_sharp_BIN(
 \item{trimmed}{\itemize{
 \item takes as a value NULL or a vector of two values. It specifies potential trimming of the data.
 If set to NULL no trimming is applied to the data. If a list of two values is provided the data is trimmed
-to include data points with the score X in between those values; deafult is trimmed=NULL
+to include data points with the score x in between those values; deafult is trimmed=NULL
 }}
 
 \item{outcome_prior}{\itemize{
@@ -61,7 +61,7 @@ outcome function; default is list('pr'=0.0001)
 }}
 
 \item{normalize}{\itemize{
-\item specifies if the data is to be normalized. The data is normalized as follows. X_normalized=(X-d)/s, where d=(min(X)+max(X))*0.5 and s=max(X)-min(X).
+\item specifies if the data is to be normalized. The data is normalized as follows. x_normalized=(x-d)/s, where d=(min(x)+max(x))*0.5 and s=max(x)-min(x).
 The priors inside the model are specified for the normalized data, in extreme cases not normalizing the data may lead to unreliable results; default is normalize=TRUE
 }}
 
@@ -82,8 +82,8 @@ The priors inside the model are specified for the normalized data, in extreme ca
 }}
 
 \item{inits}{\itemize{
-\item initial values for the sampler. By default the initial values are sampled inside the function. If user wants to provide
-its own values please refer to run.jags manual; default inits=NULL
+\item initial values for the sampler. By default the initial values are sampled inside the function. To run LoTTA with a method other than "parallel" inits must be set to NA or to a user defined value.
+If the user wants to provide its own values please refer to run.jags manual; default inits=NULL
 }}
 
 \item{method}{\itemize{
@@ -116,40 +116,58 @@ beforehand. We recommend NOT to transform the data before imputing it into the f
 The further trimming for the sensitivity analysis can be done through the function, which ensures that the data is normalized before the trimming.
 }
 \examples{
-# code to generate the data
+# functions to generate the data
 
-invlogit <- function(x) {
+ilogit <- function(x) {
   return(1 / (1 + exp(-x)))
 }
 
-fun_prob55 <- function(X) {
-  P = rep(0, length(X))
-  P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-  P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
+fun_prob55 <- function(x) {
+  P = rep(0, length(x))
+  P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+  P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
   return(P)
 }
 
-sample_prob55 <- function(X) {
-  P = rep(0, length(X))
-  P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-  P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
-  T = rep(0, length(X))
-  for (j in 1:length(X)) {
-    T[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
+sample_prob55 <- function(x) {
+  P = rep(0, length(x))
+  P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+  P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
+  t = rep(0, length(x))
+  for (j in 1:length(x)) {
+    t[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
   }
-  return(T)
+  return(t)
 }
 
+## Toy example - for the function check only! ##
 # data generation
-N=150 # try different dataset sizes
-set.seed(1234)
-X = sort(runif(N, -1, 1))
-Y = sample_prob55(X)
+N=100
+x = sort(runif(N, -1, 1))
+y = sample_prob55(x)
 c = 0
 
-# running LoTTA function on sharp RDD with a binary outcome
-# cutoff = 0, treatment effect = 0.55
-# remember to check convergence and adjust burnin, sample and adapt if needed
-out = LoTTA_sharp_BIN(X, Y, c, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
+# running LoTTA model on a sharp RDD with a binary outcome
+out = LoTTA_sharp_BIN(x, y, c, burnin = 50, sample = 50, adapt = 10,n.chains=1
+                      ,method = 'simple',inits = NA)
 
+## Use case example ##
+\dontrun{
+  # data generation
+  N=1000 # try different dataset size
+  x = sort(runif(N, -1, 1))
+  y = sample_prob55(x)
+  c = 0
+
+  # running LoTTA function on sharp RDD with binary outcomes;
+  # cutoff = 0, treatment effect = 0.55
+  # remember to check convergence and adjust burnin, sample and adapt if needed
+  out = LoTTA_sharp_BIN(x, y, c, burnin = 10000, sample = 5000, adapt = 1000,n.chains=4)
+  # print effect estimate:
+  out$Effect_estimate
+  # print JAGS output to asses convergence (the output is for normalized data)
+  out$JAGS_output
+  # plot posterior fit
+  LoTTA_plot_outcome(out,nbins = 60)
+}
 }

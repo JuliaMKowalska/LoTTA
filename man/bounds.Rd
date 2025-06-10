@@ -4,10 +4,10 @@
 \alias{bounds}
 \title{function that finds maximum widow size to searxh for a cutoff}
 \usage{
-bounds(X, ns = 25)
+bounds(x, ns = 25)
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item score data
 }}
 

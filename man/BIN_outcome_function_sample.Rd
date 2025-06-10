@@ -16,11 +16,11 @@ BIN_outcome_function_sample(coef_s, x, d_x, s_x)
 }}
 
 \item{d_x}{\itemize{
-\item shifting parameter that was used to normalize X
+\item shifting parameter that was used to normalize x
 }}
 
 \item{s_x}{\itemize{
-\item scaling parameter that was used to normalize X
+\item scaling parameter that was used to normalize x
 }}
 }
 \value{

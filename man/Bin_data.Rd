@@ -4,14 +4,14 @@
 \alias{Bin_data}
 \title{Function that splits the data into bins and computes the average in each bin}
 \usage{
-Bin_data(Y, X, c = NULL, binsize = 0.2)
+Bin_data(y, x, c = NULL, binsize = 0.2)
 }
 \arguments{
-\item{Y}{\itemize{
+\item{y}{\itemize{
 \item is the outcome data
 }}
 
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item is the score data
 }}
 
@@ -24,7 +24,7 @@ Bin_data(Y, X, c = NULL, binsize = 0.2)
 }}
 }
 \value{
-list with elements Y_bin: list of average values of Y in each bin, X_bin: list of middle points for each bin
+list with elements y_bin: list of average values of y in each bin, x_bin: list of middle points for each bin
 }
 \description{
 Function that splits the data into bins and computes the average in each bin

@@ -4,18 +4,18 @@
 \alias{read_prior}
 \title{function that checks the type of a prior and whether it is correct}
 \usage{
-read_prior(prior, minX, maxX, ubl, ubr, lb)
+read_prior(prior, minx, maxx, ubl, ubr, lb)
 }
 \arguments{
 \item{prior}{\itemize{
 \item list with prior parameters or a cutoff value
 }}
 
-\item{minX}{\itemize{
+\item{minx}{\itemize{
 \item minimum value of the score
 }}
 
-\item{maxX}{\itemize{
+\item{maxx}{\itemize{
 \item maximum value of the score
 }}
 

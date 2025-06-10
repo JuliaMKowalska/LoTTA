@@ -5,8 +5,8 @@
 \title{LoTTA_treatment}
 \usage{
 LoTTA_treatment(
-  X,
-  T,
+  x,
+  t,
   c_prior,
   jlb = 0.2,
   ci = 0.95,
@@ -26,11 +26,11 @@ LoTTA_treatment(
 )
 }
 \arguments{
-\item{X}{\itemize{
+\item{x}{\itemize{
 \item is the score data
 }}
 
-\item{T}{\itemize{
+\item{t}{\itemize{
 \item is the treatment allocation data
 }}
 
@@ -54,7 +54,7 @@ weights (optional) - vector of weights assigned to each point in the support, de
 \item{trimmed}{\itemize{
 \item takes as a value NULL or a vector of two values. It specifies potential trimming of the data.
 If set to NULL no trimming is applied to the data. If a list of two values is provided the data is trimmed
-to include data points with the score X in between those values; default is trimmed=NULL
+to include data points with the score x in between those values; default is trimmed=NULL
 }}
 
 \item{n_min}{\itemize{
@@ -66,8 +66,8 @@ to include data points with the score X in between those values; default is trim
 }}
 
 \item{normalize}{\itemize{
-\item specifies if the data is to be normalized. The data is normalized as follows. If the prior is continuous: X_normalized=(X-d)/s, where d=(min(X)+max(X))*0.5 and s=max(X)-min(X),
-If the prior is discrete: X_normalized=X/s, where s=10^m, where m is chosen so that |max(abs(X))-1| is minimal. The outcome data is normalized as follows: Y_normalized=(Y-mu)/sd, where mu=mean(Y) and sd=sd(Y).
+\item specifies if the data is to be normalized. The data is normalized as follows. If the prior is continuous: x_normalized=(x-d)/s, where d=(min(x)+max(x))*0.5 and s=max(x)-min(x),
+If the prior is discrete: x_normalized=x/s, where s=10^m, where m is chosen so that |max(abs(x))-1| is minimal. The outcome data is normalized as follows: y_normalized=(y-mu)/sd, where mu=mean(y) and sd=sd(y).
 The priors inside the model are specified for the normalized data, in extreme cases not normalizing the data may lead to unreliable results; default is normalize=TRUE
 }}
 
@@ -88,8 +88,8 @@ The priors inside the model are specified for the normalized data, in extreme ca
 }}
 
 \item{inits}{\itemize{
-\item initial values for the sampler. By default the initial values are sampled inside the function. If user wants to provide
-its own values please refer to run.jags manual; default inits=NULL
+\item initial values for the sampler. By default the initial values are sampled inside the function. To run LoTTA with a method other than "parallel" inits must be set to NA or to a user defined value.
+If the user wants to provide its own values please refer to run.jags manual; default inits=NULL
 }}
 
 \item{method}{\itemize{
@@ -123,44 +123,65 @@ The score does NOT have to be normalized beforehand. We recommend NOT to transfo
 The further trimming for the sensitivity analysis can be done through the function, which ensures that the data is normalized before the trimming.
 }
 \examples{
-# code to generate the data
+# functions to generate the data
 
-invlogit <- function(x) {
+ilogit <- function(x) {
   return(1 / (1 + exp(-x)))
 }
 
-fun_prob55 <- function(X) {
-  P = rep(0, length(X))
-  P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-  P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
+fun_prob55 <- function(x) {
+  P = rep(0, length(x))
+  P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+  P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
   return(P)
 }
 
-sample_prob55 <- function(X) {
-  P = rep(0, length(X))
-  P[X >= 0.] = invlogit((8.5 * X[X >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
-  P[X < 0.] = (X[X < 0.] + 1)^4 / 15 + 0.05
-  T = rep(0, length(X))
-  for (j in 1:length(X)) {
-    T[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
+sample_prob55 <- function(x) {
+  P = rep(0, length(x))
+  P[x >= 0.] = ilogit((8.5 * x[x >= 0.] - 1.5)) / 10.5 + 0.65 - 0.0007072
+  P[x < 0.] = (x[x < 0.] + 1)^4 / 15 + 0.05
+  t = rep(0, length(x))
+  for (j in 1:length(x)) {
+    t[j] = sample(c(1, 0), 1, prob = c(P[j], 1 - P[j]))
   }
-  return(T)
+  return(t)
 }
 
-# data generation
-N=150 # try different dataset size
-set.seed(1234)
-X = sort(runif(N, -1, 1))
-T = sample_prob55(X)
 
-# comment out to try different priors:
-c_prior=0 # known cutoff c=0
-# c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
-# c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior on -0.25, -0.2, ..., 0.25
 
-# running LoTTA model on the treatment allocation data;
-# cutoff = 0, compliance rate = 0.55
-# remember to check convergence and adjust burnin, sample and adapt if needed
-out = LoTTA_treatment(X, T, c_prior, burnin = 3000, sample = 2000, adapt = 1000, seed = 1234)
+## Toy example - for the function check only! ##
+N=100
+x = sort(runif(N, -1, 1))
+t = sample_prob55(x)
+c_prior=0 # known cutoff
 
+# running LoTTA treatment-only model;
+out = LoTTA_treatment(x,t,c_prior,burnin = 50, sample = 50, adapt = 10,n.chains=1
+                      ,method = 'simple',inits = NA)
+
+## Use case example ##
+\dontrun{
+  N=500
+  x = sort(runif(N, -1, 1))
+  t = sample_prob55(x)
+
+  # comment out to try different priors:
+   c_prior=list(clb=-0.25,cub=0.25) # uniform prior on the interval [-0.25,0.25]
+  #  c_prior=list(cstart=-0.25,cend=0.25,grid=0.05) # uniform discrete prior
+  # on -0.25, -0.2, ..., 0.25
+  # c_prior=0 # known cutoff c=0
+
+  # running LoTTA treatment-only model;
+  # cutoff = 0, compliance rate = 0.55
+  # remember to check convergence and adjust burnin, sample and adapt if needed
+  out = LoTTA_treatment(x,t,c_prior,burnin = 10000,sample = 5000,adapt=1000)
+
+  # print effect estimate:
+  out$Effect_estimate
+  # print JAGS output to asses convergence (the output is for normalized data)
+  out$JAGS_output
+  # plot posterior fit of the treatment probablity function
+  LoTTA_plot_treatment(out,nbins = 60)
+
+}
 }

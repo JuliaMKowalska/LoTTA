@@ -22,7 +22,7 @@ plot_outcome_CONT(
   title = "Outcome function",
   subtitle = NULL,
   y_lab = "",
-  x_lab = expression(paste(italic("X"), " - score")),
+  x_lab = expression(paste(italic("x"), " - score")),
   plot.theme = theme_classic(base_size = 14),
   legend.position = "none",
   name_legend = "Legend",
@@ -51,7 +51,7 @@ probs=c(0.025,0.5,0.975)
 }}
 
 \item{n_eval}{\itemize{
-\item n_eval*range(X) is the number of points at which each posterior function is evaluated,
+\item n_eval*range(x) is the number of points at which each posterior function is evaluated,
 the higher number means slower computing time and a smoother plot; default n_eval=200
 }}
 
